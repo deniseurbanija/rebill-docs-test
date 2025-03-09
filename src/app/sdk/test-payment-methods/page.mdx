@@ -1,0 +1,48 @@
+import PublicImage from '@/components/PublicImage'
+
+export const metadata = {
+  title: 'Test Payment Methods',
+  description: 'Test cards and payment methods to use in sandbox mode.',
+}
+
+# Test Payment Methods
+
+Use the corresponding payment method for the country and currency you wish to try out. Simulate payments to test your integration. {{ className: 'lead' }}
+
+To make sure your integrations works correctly, simulate transactions without moving real money with the values listed below. Test cards let you simulate several scenarios, depending on the country and the result you wish to be returned by the transaction request.
+
+You can test payments through our no-code, highly customizable [Checkout Landing](https://docs.rebill.com/products/checkout-landing). For doing this, you'll first need to have at least one [Product](https://docs.rebill.com/guides/products) and created. You can also test payments directly through API calls. [Take a look at our API reference here.](https://docs.rebill.com/api)
+
+## Successful payment
+
+| Brand      | Card Number         | CVV | Expiry date |
+| :--------- | :------------------ | :-- | :---------- |
+| Mastercard | 5299 9199 9999 9999 | 123 | 12/99       |
+
+## Rejected payments
+
+| Brand      | Card Number         | CVV | Expiry date |
+| :--------- | :------------------ | :-- | :---------- |
+| Mastercard | 4984 9199 9999 1234 | 123 | 12/29       |
+
+## PIX
+
+- A PIX payment in sandbox mode will be automatically approved in the following **30 minutes** after the purchase was generated
+- For a successful payment in BRL, the following validation requirements must be met: **Valid Zip Code** and **Valid CPF**
+- You can generate a valid CPF [here](https://www.4devs.com.br/gerador_de_cpf). Provide a valid address that matches the state of the CPF.
+  <PublicImage
+    filename="screenshots/apm/pix.gif"
+    height={300}
+    width={300}
+    layout="responsive"
+  />
+
+## Nequi
+
+- A payment with Nequi in sandbox mode must be created with an specific amount. Depending on the amount, the payment will be **approved**, **not found** or **canceled**:
+  1. **Approved:** If the amount is between 0 and 99.999 COP or more than 200.000 COP
+  2. **Not found:** If the amount is between 150.000 and 200.000 COP
+  3. **Canceled:** If the amount is between 100.000 and 150.000 COP
+
+  Always check that you are in sandbox mode when testing these payment methods.
+

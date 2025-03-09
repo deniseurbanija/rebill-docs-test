@@ -1,0 +1,46 @@
+import PublicImage from '@/components/PublicImage'
+import PublicVideo from '@/components/PublicVideo'
+
+# Why do I need an SDK?
+
+You may often want to integrate [Rebill](https://rebill.com/)'s payment solution directly into your website. This approach keeps your customers on your domain throughout their transaction process, ensuring a consistent and branded experience.
+
+This is exactly where Rebill's SDK comes into play. Our SDK offers a comprehensive suite of tools that enables you to use Rebill’s payment experience without requiring your clients to navigate away from your page.
+
+This integration method fully complies with PCI DSS standards, guaranteeing the safety of customer data. By integrating, you can be confident that customer information is kept secure and that your company complies with all regulations governing the management of payment information.
+
+<PublicVideo
+  filename="screenshots/sdk/checkout/videos/not-logged-checkout.mp4"
+  alt="Rebill's SDK checkout."
+  width="100%"
+  height={'300px'}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+/>
+
+
+## Our solution
+
+Rebill’s SDK is a purely JavaScript-based solution that manages transactions and facilitates card tokenization for existing clients. This approach makes integrating with your app effortless: Simply insert a script tag into your HTML.
+
+<CodeGroup>
+  ```html
+  <script src="https://sdk.rebill.com/v3/rebill.js"></script>
+  ```
+</CodeGroup>
+
+## **Rebill Components**
+
+Our SDK Checkout is composed of Rebill Components. Each component is a component-based UI solution that allows you to integrate the 100+ payment methods available easily. This feature is called **Rebill Components** and allows you to embed an iframe, delegating the full responsibility of transaction management to the provided UI.
+
+By default, this approach renders a prebuilt checkout page to start accepting online payments, which is fully customizable ([see customization](https://docs.rebill.com/sdk/checkout#display)).
+
+
+<PublicVideo
+  filename="screenshots/sdk/checkout/videos/feature-one-click-checkout.mp4"
+  alt="Rebill's SDK 1-click checkout functionality."
+  width="100%"
+  height={'300px'}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+/>
+
+This prebuilt checkout page integrates by default Rebill's 1-click-checkout functionality. To further details [see user login](https://docs.rebill.com/sdk/checkout#user-login).

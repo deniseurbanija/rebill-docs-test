@@ -1,0 +1,1059 @@
+import PublicImage from '../../../components/PublicImage'
+import PublicVideo from '../../../components/PublicVideo'
+
+export const metadata = {
+  title: 'SDK',
+  description:
+    'Design your customized payments experience with our JS SDK in less than 10 lines of code.',
+}
+
+# Checkout
+
+This guide covers the integration and use of our JavaScript SDK for payment
+processing. The SDK complies with PCI DSS standards to ensure security.
+
+- [Quickstart checkout](#quickstart-checkout)
+- [Create checkout](#create-checkout)
+- [Display](#display)
+- [User login](#user-login)
+- [Submit checkout](#submit-checkout)
+- [Transaction data](#transaction-data)
+- [Styling](#checkout-styling)
+- [Translations](#checkout-translations)
+- [Listening events](#listening-events)
+- [Examples](#examples)
+
+
+## Quickstart checkout
+
+Learn how to integrate our JavaScript SDK into your web application and start processing payments across Latin America in **5 simple steps**.
+
+**Prerequisites**
+
+- Ensure JavaScript is enabled in your environment.
+- Retrieve your Public Key from the dashboard.
+
+**Step 1: Insert the SDK Script**
+
+To make the JavaScript toolkit available in your app, you must add the following script tag to your HTML.
+
+<CodeGroup>
+  ```html
+  <script src="https://sdk.rebill.com/v3/rebill.js"></script>
+  ```
+</CodeGroup>
+
+**Step 2: Initialize the SDK**
+
+Initialize the SDK with your Public Key. This will create a new instance of the SDK tied to your organization.
+
+<CodeGroup>
+  ```html
+  <script>const rebill = new Rebill("{YOUR_PUBLIC_KEY}");</script>
+  ```
+</CodeGroup>
+**Step 3: Create an instance of the checkout**
+
+Create an instance of the checkout with your _product_ or _plan id_. This initializes all the necessary values for the transaction.
+
+<CodeGroup>
+    ```html
+    <script>
+
+        const rebill = new Rebill(
+            "{YOUR_PUBLIC_KEY}"
+        );
+
+        const checkoutForm = rebill.checkout.create({
+            id: "YOUR_PRODUCT_OR_PLAN_ID",
+        });
+
+    </script>
+    ```
+
+</CodeGroup>
+**Step 4: Insert Rebill Components**
+
+In order to use our UI solution approach, simply place the following HTML tag where you want the payment form to appear in your site:
+
+<CodeGroup>
+    ```html
+    <div id="rebill">
+        <!-- The iframe will be inserted here. -->
+    </div>
+    ```
+</CodeGroup>
+
+This **`div`** serves as the container where the iframe will be injected, and where the checkout form, payment methods will be rendered.
+
+**Step 5: Mount the iframe**
+
+Finally, you need to specify within the SDK which component ID should be targeted to render the iframe containing the payment methods on your webpage. You can achieve this by connecting it to your initialized SDK using `mount` method:
+
+<CodeGroup>
+```html
+<script>
+
+    const rebill = new Rebill(
+      "{YOUR_PUBLIC_KEY}"
+    );
+
+    const checkoutForm = rebill.checkout.create({
+      id: "YOUR_PRODUCT_OR_PLAN_ID",
+    });
+
+    checkoutForm.mount("rebill");
+
+</script>
+```
+</CodeGroup>
+
+**Note: The container ID can be customized. Set your own ID and then pass it through the mount method**
+
+At this point, an iframe containing the form and available payment methods for the given price will be displayed on your page. By default, the full version of the SDK is shown. If you want to customize which components are displayed, refer to the _customization section_ for more details.
+
+<PublicVideo
+  filename="screenshots/sdk/checkout/videos/feature-one-click-checkout.mp4"
+  alt="Rebill's SDK checkout."
+  width="100%"
+  height={'300px'}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+/>
+
+After a successful purchase, the payment responses, along with associated instructions for the chosen payment method, will be displayed within the iframe.
+
+<PublicImage
+  filename="screenshots/sdk/checkout/checkout-cash-result.png"
+  alt="Cash payment result"
+  width={100}
+  height={100}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+<PublicImage
+  filename="screenshots/sdk/checkout/checkout-transfer-result.png"
+  alt="Transfer payment result"
+  width={100}
+  height={100}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+## Create checkout
+
+To initialize a new instance of Rebill checkout, you must use the **`create`** method. By default, the only parameter required is the ID of the product or plan intended for payment, but the method supports additional properties to gain control over the checkout flow. The create method is described below.
+
+<CodeGroup>
+    ```js
+        const checkoutForm = rebill.checkout.create({
+            id: "YOUR_PRODUCT_OR_PLAN_ID",
+            ...,
+        });
+    ```
+</CodeGroup>
+
+| Parameter      | Type   | Required | Description                                                                                                                                                                                                                                                                   |
+| -------------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`           | String | Required | The ID of the product/plan to be purchased.                                                                                                                                                                                                                                   |
+| `currency`     | String | Optional | The currency for the transaction. By default, the SDK offers the country of the current client by its IP and uses the proper currency. Otherwise, you can specify the currency. See supported currencies in our [helper docs](https://docs.rebill.com/api/reference/helpers). |
+| `quantity `    | Number | Optional | The quantity of the product/service units intended for purchase. By default, it’s set to one item.                                                                                                                                                                            |
+| `discountCode` | String | Optional | A discount code to initialize the SDK with a given discount applied. If this value is provided in advance, you can opt to hide the discount code input field that is rendered in the iframe.                                                                                  |
+
+The create method returns four functions that allow you to interact with the instance of your form created. These methods are:
+
+| Method    | Description                                                                                                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mount`   | Async method that renders the iframe and injects it into your HTML. Receives the ID of the container component as a parameter.                                                                               |
+| `display` | Defines which components are shown or not inside the iframe. See [display](https://docs.rebill.com/sdk/checkout#display).                                                                              |
+| `set`     | Communicates with the iframe and sets the necessary data for the transaction. Only necessary if some section is hidden by the display method. See [transaction data](https://docs.rebill.com/sdk/checkout#transaction-data). |
+| `submit`  | Allows you to trigger the submit action from outside the iframe. See [the `submit` method](https://docs.rebill.com/sdk/checkout#submit-checkout).                                                                           |
+| `reset`   | Allows you to trigger the reset checkout flow from outside the iframe. See [the `reset` method](https://docs.rebill.com/sdk/checkout#checkout-reset).                                                                           |
+| `translations` | Allows you to access and override the translations. See [translations](https://docs.rebill.com/sdk/checkout#checkout-translations).                                                                   |
+
+<br />
+<br />
+
+# Guides
+
+This section contains guides to help you get started and learn how to maximize
+your experience processing payments with Rebill.
+
+# Customization
+
+By default, you can start transacting with minimum setup with our Rebill Components solution. This approach allows you to fully integrate the whole experience of Rebill’s checkout, without putting any effort into managing responses, validations, and styling.
+
+However, there is another approach where you gain maximum control over what is rendered inside the iframe and what is managed externally.
+
+The only components that you must persist inside the iframe are the payment methods and the payment button. All the other fields can be managed externally in your application and simply pass the information to the SDK in order to make the transaction.
+
+## Display
+
+In order to follow this approach, the SDK exposes a method called `display` where you can declare which components you don't want to be shown inside the iframe.
+
+<CodeGroup>
+    ```js
+    checkoutForm.display({
+        ... // here will be the excluded fields
+    })
+    ```
+</CodeGroup>
+
+This are the values sopported as props in order to exclude sections from the iframe
+
+| Property              | Type    | Required | Default value |
+| --------------------- | ------- | -------- | ------------- |
+| `userLogin`           | Boolean | Optional | true          |
+| `billing`             | Boolean | Optional | true          |
+| `customerInformation` | Boolean | Optional | true          |
+| `cardholderDetails`   | Boolean | Optional | true          |
+| `discountCode`        | Boolean | Optional | true          |
+| `checkoutSummary`     | Boolean | Optional | true          |
+| `submitButton`        | Boolean | Optional | true          |
+| `resetButton`         | Boolean | Optional | true          |
+
+By default, every value is set to true. If an attribute is set to false, the associated section won't be rendered and the management of those fields must be implemented by the integrator.
+
+Each property is associated with a section and is arranged as follows:
+
+<PublicImage
+  filename="screenshots/sdk/checkout/checkout-display.png"
+  alt="Rebill checkout display"
+  width={200}
+  height={200}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+If you decide to manage all of these parts externally in your own application, you must simply set all the values to false. The following result will then be rendered in the iframe:
+
+<PublicImage
+  filename="screenshots/sdk/checkout/checkout-minimum-display.png"
+  alt="Rebill minimum checkout display"
+  width={50}
+  height={50}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+You must set the display options before calling the `mount` action.
+
+### Exclude payment methods {{ id: "checkout-exclude-payment-methods" }}
+
+With the display method of the SDK, you will also be able to decide which payment methods are shown to your clients for making payments.
+
+The payment methods are grouped into three main categories: card, cash, and transfer. For example, in Argentina, 'cash' may represent 'PagoFacil', in Colombia 'Efecty', and in Mexico 'Paynet'.
+
+You can easily exclude one of these categories by passing the **`excludePaymentMethods`** property to the display method. This property accepts an array of strings representing the categories you want to exclude. Additionally, you can exclude an individual payment method by sending its name in the **`excludePaymentMethods`** array.
+
+To see the list of every payment method available in each country, refer to our [helper docs](https://docs.rebill.com/api/reference/helpers).
+
+<CodeGroup>
+    ```js
+    checkoutForm.display({
+        ...,
+        excludePaymentMethods: ["CASH", "REBILL_PIX"],
+    })
+    ```
+</CodeGroup>
+
+## User login
+
+To provide a smoother checkout experience for your customers, Rebill's SDK by default integrates 1-click checkout functionality.
+
+When a customer uses Rebill’s 1-click checkout, they can securely access their billing information and cards without having to re-enter it for every purchase on your website. This feature enhances the user experience by reducing friction during the checkout process, potentially leading to higher conversion rates, improved customer satisfaction, and a more seamless overall shopping experience.
+
+The checkout flow starts simply by asking for your customer's email. With this information, the SDK will check for an existing account associated with that email. If found, a one-time password (OTP) is sent via email and phone for secure login. Once authenticated, customers can choose from their saved cards, add a new one, or select an alternative payment method, all without re-entering their information. New customers will be prompted to fill in their billing details before completing the purchase.
+
+<PublicVideo
+  filename="screenshots/sdk/checkout/videos/feature-one-click-checkout.mp4"
+  alt="Rebill's SDK 1-click checkout functionality."
+  width="100%"
+  height={'300px'}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+/>
+
+**How does it work?**
+
+1. **Customer Email:** The customer provides their email address.
+2. **Client Verification and OTP:** The SDK checks for an existing customer with this email. If found, a one-time password (OTP) is sent via email and phone (customizable from the dashboard).
+3. **Retrieve Saved Cards and Information:** After logging in with the OTP, the SDK retrieves all saved cards and information for the customer.
+4. **Checkout Options:**
+   ◦ Authenticated customers can choose a saved card, add a new one, or select an alternative payment method without entering additional information.
+   ◦ Customers can also use “guest mode” to log out and complete the checkout with saved information.
+5. **New Customer:** If this is the customer's first purchase, they must fill in their billing details, select a payment method, and complete the checkout.
+
+In case you want to avoid this functionality, simply set the **`userLogin`** property to false using the **`display`** method.
+
+<CodeGroup>
+    ```js
+    checkoutForm.display({
+        ...,
+        userLogin: false
+    })
+    ```
+</CodeGroup>
+
+As a result, your checkout experience will not include the login step and the render screen will remain with the complete checkout form.
+
+<PublicImage
+  filename="screenshots/sdk/checkout/new-full-checkout.png"
+  alt="Rebill minimum checkout display"
+  width={50}
+  height={50}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+## Submit checkout
+
+If you decide not to render the submit button inside the iframe using the display method, it becomes the integrator's responsibility to submit the payment, as it will not be triggered from the UI.
+
+To control this flow, you must use the **`submit`** async method. Here's an example:
+
+<CodeGroup>
+    ```js 
+    checkoutForm.submit() 
+    ```
+</CodeGroup>
+
+_Please note that if the submit button is rendered as part of Rebill's components, handling this logic is not necessary and you can skip this section._
+
+There are two possible options for capturing the event response. The simplest scenario is to listen to the triggered events with the `on` method and attach a callback function (see [listening to events]("http://docs.rebill.com/sdk#listening-events)).
+
+However, there is another approach where you can handle the response directly as the returned value from the async `submit` method.
+
+<CodeGroup>
+    ```js 
+    const response = await checkoutForm.submit() 
+    ```
+</CodeGroup>
+
+The response structure is described below:
+| Property | Type | Description | Is optional |
+| ----------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------- |
+| `status` | 'approved' \| 'error' \| 'rejected' | The status of the processed transaction. | - |
+| `paymentType` | 'card' \| 'alternative' | The payment method type in which the transaction was made. | - |
+| `data` | Response\<Type\> | The response data associated with the processed transaction. | - |
+
+The response `<Type>` can take different values depending on whether the checkout was successful with a card or alternative payment method, or if it resulted in an error. These structures are described below:
+
+### Approved checkout{{ id: "checkout-approved" }}
+
+**Card**
+
+For a checkout made with a card payment method:
+
+| Parameter                | Type   | Description                                                                                                             | Is optional |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `payment.id`             | string | Unique identifier for the payment.                                                                                      | -           |
+| `payment.status`         | string | Status of the payment.                                                                                                  | -           |
+| `payment.amount`         | number | Amount of the payment.                                                                                                  | -           |
+| `payment.currency`       | string | Currency of the payment.                                                                                                | -           |
+| `payment.createdAt`      | string | Timestamp when the payment was created.                                                                                 | -           |
+| `payment.subscriptionId` | string | The ID associated with the paid subscription. This attribute will only be returned if the purchase is linked to a plan. | Optional    |
+| `customer.id`            | string | Unique identifier for the customer.                                                                                     | -           |
+| `customer.email`         | string | Email address of the customer.                                                                                          | -           |
+| `card.id`                | string | Unique identifier for the card.                                                                                         | -           |
+| `card.createdAt`         | string | Timestamp when the card was created.                                                                                    | -           |
+| `card.lastFour`          | string | Last four digits of the card number.                                                                                    | -           |
+| `card.expiration.month`  | number | Expiration month of the card.                                                                                           | -           |
+| `card.expiration.year`   | number | Expiration year of the card.                                                                                            | -           |
+
+<CodeGroup>
+    ```js
+    {
+        "status": "approved",
+        "paymentType": "card",
+        "data": {
+            "payment": {
+                "id": "xxxxxxxxxx-xx-4114-xx-ce5839136944",
+                "status": "SUCCEEDED",
+                "amount": 1000,
+                "currency": "ARS",
+                "createdAt": "2024-05-20T12:34:56Z"
+            },
+            "customer": {
+                "id": "xxxx-172f-4f86-xxxxxx-555945cf21e3",
+                "email": "customer@example.com"
+            },
+            "card": {
+                "id": "xxxx-39f6-4c0a-xxxxxx-1ae42bf4d7dd",
+                "createdAt": "2024-04-18T11:30:00Z",
+                "lastFour": "1234",
+                "expiration": {
+                        "month": 12,
+                        "year": 2027
+                }
+            }
+        }
+    } 
+```
+</CodeGroup>
+
+**Alternative payment method**
+
+For a checkout made with a cash payment method:
+
+| Parameter                  | Type   | Description                          | Is optinal |
+| -------------------------- | ------ | ------------------------------------ | ---------- |
+| `customer.email`           | string | Email address of the customer.       | -          |
+| `slip.code.id`             | string | Unique identifier for the slip code. | -          |
+| `slip.code.expirationDate` | string | Expiration date of the slip code.    | -          |
+
+<CodeGroup>
+    ```js 
+    {
+        "status": "approved",
+        "paymentType": "alternative",
+        "data": {
+            "customer": {
+                "email": "customer@example.com"
+            },
+            "slip": {
+                "code": {
+                    "id": "1289992",
+                    "expirationDate": "11/04/2024"
+                }
+            }
+        }
+    }
+
+    ```
+
+</CodeGroup>
+
+For a checkout made with a transfer payment method:
+
+| Parameter              | Type   | Description                                      | Is optional |
+| ---------------------- | ------ | ------------------------------------------------ | ----------- |
+| `customer.email`       | string | Email address of the customer.                   | -           |
+| `slip.code.image`      | string | Base64 encoded image of the slip code.           | Optional    |
+| `slip.code.id`         | string | Unique identifier for the slip code.             | Optional    |
+| `slip.code.redirectTo` | string | URL to redirect to after payment.                | Optional    |
+| `slip.code.cieNumber`  | string | CIE number for the transaction.                  | Optional    |
+| `slip.code.clabe`      | string | CLABE number for the transaction.                | Optional    |
+| `slip.code.reference`  | string | Reference number for the transaction.            | Optional    |
+| `slip.code.redirectTo` | string | URL to redirect to complete the payment process. | Optional    |
+
+<CodeGroup>
+```js 
+ {
+	status: "approved",
+	paymentType: "alternative",
+	data: {
+        customer: {
+            email: "customer@example.com"
+        },
+        slip: {
+            code: {
+                id: "63049545",
+                image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtoAAALaCAIAAACAjxxxxxOx..."
+                redirectTo: "https://pse.rebill.com/Banks/CA_f3", 
+                cieNumber: "1411217", 
+                clabe: "44422", 
+                reference: "000000012" 
+            }
+        }
+    }
+}
+```
+</CodeGroup>
+
+### Rejected checkout{{ id: "checkout-rejected" }}
+
+In case the transaction resolves as a rejected payment.
+
+**Card**
+
+For a checkout made with a card payment method:
+
+| Parameter               | Type   | Description                             | Is optional |
+| ----------------------- | ------ | --------------------------------------- | ----------- |
+| `payment.id`            | string | Unique identifier for the payment.      | -           |
+| `payment.status`        | string | Status of the payment.                  | -           |
+| `payment.amount`        | number | Amount of the payment.                  | -           |
+| `payment.currency`      | string | Currency of the payment.                | -           |
+| `payment.createdAt`     | string | Timestamp when the payment was created. | -           |
+| `customer.id`           | string | Unique identifier for the customer.     | -           |
+| `customer.email`        | string | Email address of the customer.          | -           |
+| `card.id`               | string | Unique identifier for the card.         | -           |
+| `card.createdAt`        | string | Timestamp when the card was created.    | -           |
+| `card.lastFour`         | string | Last four digits of the card number.    | -           |
+| `card.expiration.month` | number | Expiration month of the card.           | -           |
+| `card.expiration.year`  | number | Expiration year of the card.            | -           |
+
+<CodeGroup>
+    ```js 
+    {
+        status: "rejected",
+        paymentType: "card",
+        data: {
+            payment: {
+                id: "xxxxxxxxxx-xx-4114-xx-ce5839136944",
+                status: "FAILED",
+                statusDetail: "The gateway can't create your customer card.",
+                amount: 1000,
+                currency: "ARS",
+                createdAt: "2024-05-20T12:34:56Z"
+            },
+            customer: {
+                id: "xxxx-172f-4f86-xxxxxx-555945cf21e3",
+                email: "customer@example.com"
+            },
+            card: {
+                i: "xxxx-39f6-4c0a-xxxxxx-1ae42bf4d7dd",
+                createdAt: "2024-04-18T11:30:00Z",
+                lastFour: "1234",
+                expiration: {
+                month: 12,
+                year: 2027
+                }
+            }
+        }
+    }    
+    ```
+</CodeGroup>
+
+**Alternative payment method**
+
+Transactions made with an alternative payment method do not have an associated `rejected` status. Since there are no intermediate validation steps, payments in this mode only respond with a success or error status.
+
+### Checkout error{{ id: "checkout-error" }}
+
+When the payment attempt fails and is not generated, a response with the following structure will be returned:
+
+| Parameter | Type   | Description                                               | Is optional |
+| --------- | ------ | --------------------------------------------------------- | ----------- |
+| `message` | string | A descriptive message explaining the error that occurred. | -           |
+
+<CodeGroup>
+    ```js 
+    {
+        status: "error",
+        paymentType: "card",
+        data: {
+            message: "reason",
+        }
+    }
+    ```
+</CodeGroup>
+
+### Reset checkout flow{{ id: "checkout-reset" }}
+
+In case the transaction ends up in an error, a rejected payment even if you want to enable your customer the ability to change payment method after already selecting any, you can easily achieve this by the reset button that displays at the end of the checkout flow.
+
+With this button, you could reset the checkout flow and give your customers the ability to choose a different payment method or card.
+
+Is important to notice that this button does not reset the current billing o customer information, it only resets the flow enabling your customer to opt for a different payment option.
+
+<PublicImage
+  filename="screenshots/sdk/checkout/reset-button-alternative.png"
+  alt="Cash payment result"
+  width={100}
+  height={100}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+<PublicImage
+  filename="screenshots/sdk/checkout/reset-button-card-checkout.png"
+  alt="Cash payment result"
+  width={100}
+  height={100}
+  style={{ border: '1px solid #f0f0f0', borderRadius: '10px' }}
+  layout="responsive"
+/>
+
+You could opt for not rendering this reset button by using the `display` method.
+
+<CodeGroup>
+ ```js 
+  checkoutForm.display({
+    resetButton: false
+  }) 
+  ```
+</CodeGroup>
+
+If you decide to follow this approach, it becomes the integrator's responsibility to reset the flow, as it will not be triggered from the UI.
+
+To control this flow, you must use the **`reset`** method. Here's an example:
+
+<CodeGroup>
+```js
+checkoutForm.reset()
+```
+</CodeGroup>
+
+_Please note that if the reset button is rendered as part of Rebill's components, handling this logic is not necessary and you can skip this section._
+
+## Transaction data
+
+At this stage, if you've chosen to hide certain components within the iframe, the responsibility for configuring these values falls within your integration logic. Rebill’s SDK provides a `set` method that you must use to communicate with the iframe and set the necessary data.
+
+<CodeGroup>
+    ```js
+    checkoutForm.set({
+        customerInformation: {
+            firstName: "John",
+            lastName: "Doe",
+            email: "john@rebill.com",
+            phoneNumber: {
+                countryCode: "54",
+                number: "22334455",
+            },
+            identification: {
+                type: "DNI",
+                id: "4498281818",
+            },
+        },
+        billing: {
+            city: "CABA",
+            country: "AR",
+            line1: "Roldan 9998",
+            line2: "Oficina 313 Rebill",
+            zipCode: "C1414",
+            state: "Buenos Aires",
+        },
+        cardHolderDetails: {
+            identification: {
+                type: "DNI",
+                id: "4498281818",
+            },
+            name: "John Doe",
+        },
+        paymentMetadata: {
+            ...
+        },
+        subscriptionMetadata: {
+            ...
+        },
+    });
+    ```
+</CodeGroup>
+
+The structure attached to this method is described below.
+
+**Customer Information**
+
+| Property                  | Type   | Description                                                                                                                                                                                                                                                                                                                   |
+| ------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `firstName`               | string | The first name of the customer.                                                                                                                                                                                                                                                                                               |
+| `lastName`                | string | The last name or surname of the customer.                                                                                                                                                                                                                                                                                     |
+| `email`                   | string | The customer's email address, used for communication and identification purposes.                                                                                                                                                                                                                                             |
+| `identification.type`     | string | The `type` attribute of the `identification` property can take different values depending on the country. To obtain the allowed values, see our [helper docs](https://docs.rebill.com/api/reference/helpers).                                                                                                                 |
+| `identification.id`       | string | The unique identification number assigned to the customer, based on the selected `type` of identification.                                                                                                                                                                                                                    |
+| `phoneNumber.countryCode` | string | The `countryCode` attribute of the `phone` property can be obtained by using Rebill SDK helpers to ensure it matches the country's dialing code.                                                                                                                                                                              |
+| `phoneNumber.number`      | string | The local phone number of the customer, excluding the country code.                                                                                                                                                                                                                                                           |
+| `billing.line1`           | string | The first line of the customer's billing address, usually containing the street address.                                                                                                                                                                                                                                      |
+| `billing.line2`           | string | The second line of the billing address, often used for apartment, suite, or additional address information.                                                                                                                                                                                                                   |
+| `billing.city`            | string | The city where the customer resides.                                                                                                                                                                                                                                                                                          |
+| `billing.zipCode`         | string | The postal or ZIP code associated with the customer's billing address.                                                                                                                                                                                                                                                        |
+| `billing.state`           | string | The state, province, or region of the customer's billing address.                                                                                                                                                                                                                                                             |
+| `billing.country`         | string | The `country` attribute of the `billingAddress` property must be a valid `isoCountryCode`. Additionally, `state` attribute should be obtained based on the `isoCountryCode` of the completed `country` property. In order to obtain the allowed values, see our [helper docs](https://docs.rebill.com/api/reference/helpers). |
+| `cardHolderDetails.name`  | string | The full name of the cardholder as it appears on the payment card.                                                                                                                                                                                                                                                            |
+
+Notice that **every value received in the object is optional, but it becomes required when its corresponding section of the iframe UI is decided not to be shown**. In such cases, it must be passed as a property within the `set` method.
+
+The required fields for the payload differ by country. The list of parameters provided below includes only the required fields for each country.
+
+- View all possible parameters for <a href="https://docs.rebill.com/api/reference/checkout#customer-payload-card" >checkout with card</a>.
+- View all possible parameters for <a href="https://docs.rebill.com/api/reference/checkout#customer-payload-cash" >checkout with cash</a>.
+- View all possible parameters for <a href="https://docs.rebill.com/api/reference/checkout#customer-payload-transfer" >checkout with transfer</a>.
+
+**Metadata**
+
+| Property               | Type   | Required |
+| ---------------------- | ------ | -------- |
+| `paymentMetadata`      | object | Optional |
+| `subscriptionMetadata` | object | Optional |
+
+The payment metadata will be associated with the payment, while the subscription metadata will be linked to the resulting subscription.
+
+## Styling{{ id: "checkout-styling" }}
+
+To fully customize the appearance of your components, you can use the `custom` method. This method allows you to tailor the look and feel of the SDK components to match your application's design seamlessly.
+
+<CodeGroup>
+    ```js
+    checkoutForm.custom({
+        css: ...
+    })
+    ```
+</CodeGroup>
+| Property | Type | Required |
+| --- | --- | --- |
+| `css` | String | Required |
+
+The method receives a `css` property where you can insert a string containing all the CSS you want to attach to your SDK instance. Every component of the rendered iframe has an specific id witch you can inspect in order to style almos any component
+
+Here is an example of the implementation:
+
+<CodeGroup>
+    ```js
+        checkoutForm.custom({
+            css: `
+                #input-label{
+                    display: none
+                }
+            `
+        });
+    ```
+</CodeGroup>
+
+### Optional fields {{ id: "sdk-optional-fields" }}
+
+To hide all optional fields from your checkout sdk, you can apply the following custom CSS:
+
+<CodeGroup>
+    ```js
+        checkoutForm.custom({
+            css: `
+                .optional-field {
+                    display: none;
+                }
+            `
+        });
+    ```
+</CodeGroup>
+
+
+## Translations{{ id: "checkout-translations" }}
+
+Rebill's SDK supports multiple languages to enhance user experience and accessibility. By default, the SDK can handle three languages: English, Spanish, and Portuguese. It automatically detects and adjusts the language based on the user's location, similar to how it manages currency, ensuring all displayed text is appropriately localized.
+
+In addition to automatic language detection, our SDK offers flexibility in text customization through the **`translations`** method. You may use this feature to customize the texts to better reflect your brand communication in each language. Texts that are not explicitly overridden will retain their default translations.
+
+Here is an example of how to use the **`translations`** method to customize text for each supported language. The only 3 languages supported are English (EN), Spanish (ES) and Portuguese (PT).
+
+<CodeGroup>
+    ```js
+        checkoutForm.translations({ 
+            es: {
+                "Pay now": "Pagar ahora"
+            },
+            en: {
+                "Pay now": "Pay now"
+            },
+            pt: {
+                "Pay now": "Pague agora"
+            },
+        });
+    ```
+</CodeGroup>
+
+The text options that support translations follow the structure of this <a href="https://assets.rebill.com/sdk/translations-en.json" target="_blank" rel="noopener noreferrer">JSON file</a>. The translations support a key-value structure, so to write your custom texts, just find the key you want to override within the JSON document and provide your new text. The same structure is repeated for Spanish and Portuguese translations, but the keys remain in English.
+
+If you want to prevent the SDK from setting the language based on the user's location and instead display it in only one predefined language (en, es, or pt), you can set a fixed language for the rendered components. Simply add a `language` property to the translation method.
+
+<CodeGroup>
+```javascript
+cardForm.translations({
+  ...,
+  default: "en"
+})
+````
+</CodeGroup>
+
+**You must set the translations before calling the `mount` action.**
+
+## Listening events
+
+This section explains how to configure callbacks that will be triggered by certain events generated internally by the SDK. By utilizing these functions, you can handle successful operations and errors with your custom logic. You can attach your functions to these events using the **`on`** method, passing as arguments the event type you want to listen to and the handler function that will receive the event.
+
+<CodeGroup>
+    ```js 
+        checkoutForm.on(eventType, handler); 
+    ```
+</CodeGroup>
+
+**Method parameters**
+
+| Property    | Type                                                | Description                                                                                                                           | Required |
+| ----------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `eventType` | 'approved' \| 'error' \| 'rejected' \| 'formStatus' | The name of the event. Required                                                                                                       | Required |
+| `handler`   | function(e) => void                                 | The callback function that will be called after the event is triggered. It receives the value returned from the event as a parameter. | Required |
+
+**Event response**
+
+The event response structure is described below:
+| Property | Type | Description | Is optional |
+| ----------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------- |
+| `paymentType` | 'card' \| 'alternative' | The payment method type in which the transaction was made. | - |
+| `data` | Response\<Type\> | The response data associated with the processed transaction. | - |
+
+The response `<Type>` can take different values depending on whether the checkout was successful with a card or alternative payment method, or if it resulted in an error. These structures are described below:
+
+### Approved event{{ id: "checkout-approved-event" }}
+
+When the `approved` event is called, it passes an event object to the callback function.
+
+The response varies depending on whether the checkout was made using a card or other alternative payment method options. These structures are described below.
+
+**Card checkout**
+
+| Parameter                | Type   | Description                                                                                                             | Is optional |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `payment.id`             | string | Unique identifier for the payment.                                                                                      | -           |
+| `payment.status`         | string | Status of the payment.                                                                                                  | -           |
+| `payment.amount`         | number | Amount of the payment.                                                                                                  | -           |
+| `payment.currency`       | string | Currency of the payment.                                                                                                | -           |
+| `payment.createdAt`      | string | Timestamp when the payment was created.                                                                                 | -           |
+| `payment.subscriptionId` | string | The ID associated with the paid subscription. This attribute will only be returned if the purchase is linked to a plan. | Optional    |
+| `customer.id`            | string | Unique identifier for the customer.                                                                                     | -           |
+| `customer.email`         | string | Email address of the customer.                                                                                          | -           |
+| `card.id`                | string | Unique identifier for the card.                                                                                         | -           |
+| `card.createdAt`         | string | Timestamp when the card was created.                                                                                    | -           |
+| `card.lastFour`          | string | Last four digits of the card number.                                                                                    | -           |
+| `card.expiration.month`  | number | Expiration month of the card.                                                                                           | -           |
+| `card.expiration.year`   | number | Expiration year of the card.                                                                                            | -           |
+
+<CodeGroup>
+    ```js
+    {
+        "paymentType": "card",
+        "data": {
+            "payment": {
+                "id": "xxxxxxxxxx-xx-4114-xx-ce5839136944",
+                "status": "SUCCEEDED",
+                "amount": 1000,
+                "currency": "ARS",
+                "createdAt": "2024-05-20T12:34:56Z"
+            },
+            "customer": {
+                "id": "xxxx-172f-4f86-xxxxxx-555945cf21e3",
+                "email": "customer@example.com"
+            },
+            "card": {
+                "id": "xxxx-39f6-4c0a-xxxxxx-1ae42bf4d7dd",
+                "createdAt": "2024-04-18T11:30:00Z",
+                "lastFour": "1234",
+                "expiration": {
+                        "month": 12,
+                        "year": 2027
+                }
+            }
+        }
+    } 
+```
+</CodeGroup>
+
+**Alternativa checkout**
+
+For a checkout made with a cash payment method:
+
+| Parameter                  | Type   | Description                          | Is optinal |
+| -------------------------- | ------ | ------------------------------------ | ---------- |
+| `customer.email`           | string | Email address of the customer.       | -          |
+| `slip.code.id`             | string | Unique identifier for the slip code. | -          |
+| `slip.code.expirationDate` | string | Expiration date of the slip code.    | -          |
+
+<CodeGroup>
+    ```js 
+    {
+        "paymentType": "alternative",
+        "data": {
+            "customer": {
+                "email": "customer@example.com"
+            },
+            "slip": {
+                "code": {
+                    "id": "1289992",
+                    "expirationDate": "11/04/2024"
+                }
+            }
+        }
+    }
+
+    ```
+
+</CodeGroup>
+
+For a checkout made with a transfer payment method:
+
+| Parameter              | Type   | Description                                      | Is optional |
+| ---------------------- | ------ | ------------------------------------------------ | ----------- |
+| `customer.email`       | string | Email address of the customer                    | -           |
+| `slip.code.image`      | string | Base64 encoded image of the slip code            | -           |
+| `slip.code.id`         | string | Unique identifier for the slip code              | Optional    |
+| `slip.code.redirectTo` | string | URL to redirect to after payment.                | Optional    |
+| `slip.code.cieNumber`  | string | CIE number for the transaction.                  | Optional    |
+| `slip.code.clabe`      | string | CLABE number for the transaction.                | Optional    |
+| `slip.code.reference`  | string | Reference number for the transaction.            | Optional    |
+| `slip.code.redirectTo` | string | URL to redirect to complete the payment process. | Optional    |
+
+<CodeGroup>
+```js 
+ {
+	paymentType: "alternative",
+	data: {
+        customer: {
+            email: "customer@example.com"
+        },
+        slip: {
+            code: {
+                id: "63049545",
+                image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtoAAALaCAIAAACAjxxxxxOx..."
+                redirectTo: "https://pse.rebill.com/Banks/CA_f3", 
+                cieNumber: "1411217", 
+                clabe: "44422", 
+                reference: "000000012" 
+            }
+        }
+    }
+}
+```
+</CodeGroup>
+
+### Rejected event{{ id: "checkout-rejected" }}
+
+When the `rejected` event is called, it passes an event object to the callback function.
+
+The structure of the response varies depending on whether the checkout was made using a card or other alternative payment method options. These structures are described below.
+
+**Card Checkout**
+
+| Parameter               | Type   | Description                             | Is optional |
+| ----------------------- | ------ | --------------------------------------- | ----------- |
+| `payment.id`            | string | Unique identifier for the payment.      | -           |
+| `payment.status`        | string | Status of the payment.                  | -           |
+| `payment.amount`        | number | Amount of the payment.                  | -           |
+| `payment.currency`      | string | Currency of the payment.                | -           |
+| `payment.createdAt`     | string | Timestamp when the payment was created. | -           |
+| `customer.id`           | string | Unique identifier for the customer.     | -           |
+| `customer.email`        | string | Email address of the customer.          | -           |
+| `card.id`               | string | Unique identifier for the card.         | -           |
+| `card.createdAt`        | string | Timestamp when the card was created.    | -           |
+| `card.lastFour`         | string | Last four digits of the card number.    | -           |
+| `card.expiration.month` | number | Expiration month of the card.           | -           |
+| `card.expiration.year`  | number | Expiration year of the card.            | -           |
+
+<CodeGroup>
+    ```js
+    {
+        "paymentType": "card",
+        "data": {
+            "payment": {
+                "id": "xxxxxxxxxx-xx-4114-xx-ce5839136944",
+                "status": "FAILED",
+                "statusDetail": "The gateway can't create your customer card.",
+                "amount": 1000,
+                "currency": "ARS",
+                "createdAt": "2024-05-20T12:34:56Z"
+            },
+            "customer": {
+                "id": "xxxx-172f-4f86-xxxxxx-555945cf21e3",
+                "email": "customer@example.com"
+            },
+            "card": {
+                "id": "xxxx-39f6-4c0a-xxxxxx-1ae42bf4d7dd",
+                "createdAt": "2024-04-18T11:30:00Z",
+                "lastFour": "1234",
+                "expiration": {
+                        "month": 12,
+                        "year": 2027
+                }
+            }
+        }
+    } 
+```
+</CodeGroup>
+
+**Alternative Checkout**
+
+Payments associated with an alternative payment method do not have an associated **`rejected`** event. Since there are no intermediate validation steps, payments in this mode only trigger success or error states.
+
+### **Error event** {{ id: "checkout-error-event" }}
+
+When the `error` event is called, it passes an event object to the callback function.
+
+This event is associated with a scenario where the payment attempt or initialization has failed. The structure is described below.
+
+| Parameter | Type   | Description                                               | Is optional |
+| --------- | ------ | --------------------------------------------------------- | ----------- |
+| `message` | string | A descriptive message explaining the error that occurred. | -           |
+| `paymentType` | string | The payment method type related to the error. | Present only if the error is related to a specific payment method. Omitted for initialization errors. |
+| `country` | string | The country that is out of coverage and caused the error. | Present only if the error is related to country coverage restrictions.   |
+
+Error example related to the transaction and a specific payment method:
+<CodeGroup>
+    ```js 
+    {
+        "paymentType": "card",
+        "data": {
+            "message": "reason",
+        }
+    }
+    ```
+</CodeGroup>
+
+Error example related to an out-of-coverage country:
+<CodeGroup>
+    ```js 
+    {
+        "data": {
+            "message": "Country not supported",
+            "country": "Canada"
+        }
+    }
+    ```
+</CodeGroup>
+
+Here is an example of the implementation:
+
+<CodeGroup>
+    ```js
+        checkoutForm.on("approved", event => {
+            console.log("approved!", event.data.id);
+        });
+
+        checkoutForm.on("rejected", event => {
+            console.log("rejected!", event.data.id);
+        });
+
+        checkoutForm.on("error", event => {
+            console.log("error", event.data.message);
+        });
+    ```
+
+</CodeGroup>
+
+### **Form status event** {{ id: "checkout-form-status-event" }}
+
+When the `formStatus` event is called, it passes an event object to the callback function. This structure is described below.
+
+This event provides access to the form data validity and its current errors. The structure is described below.
+
+| Parameter | Type                 | Description                                                     | Is optional |
+| --------- | -------------------- | --------------------------------------------------------------- | ----------- |
+| `isValid` | boolean              | A boolean indicating the current valid status of the form data. | -           |
+| `errors`  | \{ key: string, … \} | An object with the errored fields in the form.                  | -           |
+
+Here is an example of the implementation:
+
+<CodeGroup>
+    ```js
+    checkoutForm.on("formStatus", event => {
+        console.log("current form status", event.isValid);
+        console.log("errors", event.errors);
+    });
+    ```
+</CodeGroup>
+
+---
+
+## Examples
+
+<br />
+To help you get started quickly, we have created an example repository on GitHub
+that demonstrates both scenarios: processing transactions and card tokenization
+with Rebill's SDK. This repository includes deployment setups for both use
+cases.
+
+<a
+  href="https://github.com/rebillto/demo-sdk-v3"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  Github repository
+</a>
